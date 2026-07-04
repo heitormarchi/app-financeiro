@@ -10,6 +10,9 @@ __pycache__/
 node_modules/
 frontend/dist/
 
+# Dados pessoais de exemplo (fatura, extratos, prints)
+docs/exemplos/
+
 # Artefatos de análise
 graphify-out/
 backend/app/graphify-out/
