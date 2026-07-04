@@ -1,0 +1,16 @@
+# Segredos
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node / front
+node_modules/
+frontend/dist/
+
+# Artefatos de análise
+graphify-out/
+backend/app/graphify-out/
+.graphify_*.json
