@@ -1,6 +1,9 @@
 # Segredos
 .env
 
+# Scratch da execucao de planos (subagent-driven-development)
+.superpowers/
+
 # Python
 __pycache__/
 *.pyc
