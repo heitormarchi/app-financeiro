@@ -1,0 +1,43 @@
+# objetivo macro:
+- simplicidade.
+
+# fatura do cartao
+- a fatura do cartão em PDF está em @docs\exemplos\fatura.pdf
+- crie o parser para lê-la <ao inves/em conjunto> com o OFX (este banco não entrega OFX do cartão)
+- arquivo protegido por senha. crie uma tela de config de senhas de pdfs.
+- use a senha correspondente para abri-lo.
+
+# mobile
+- menu inferior com icones e "..." caso necessário
+
+# bancos
+- insira Inter Empresas neste contexto, para eu ver a empresa "junto, mas separado"
+- Inter empresas tem API disponível
+- o app deve sugerir as transferências entre Inter empresas x meus bancos quando identificar saldo baixo.
+- deve ser possível fazer as transferencias dentro do proprio app-financeiro pela api do inter
+- verificar disponibilidade do inter empresas > investimentos.
+
+# integrações
+- tenho evolution api no meu whatsapp, então vou fazer um fluxo de enviar documentos no whatsapp e integrar no app-financeiro.
+- por exemplo: exportar o OFX no iOS já encaminha para o whatsapp
+- já deixe isso pré-programado
+- pode ser ofx, pdf, imagem/foto
+- exemplo do OFX BB está na mesma pasta de docs\exemplos\
+
+# docs\exemplos\
+- ofx do BB
+- print de lançamentos futuros no BB
+- fatura.pdf da caixa
+
+# compras com cupom fiscal
+- fazer o mapeamento do item de acordo com categorias
+- tela para atribuir/editar categorias
+- faturas genericas, abrir pendencia para descrever
+
+# futuros:
+- possibilidade de integrar com:
+	- ifood
+	- mercado livre
+	- shopee
+	- outros apps de compra
+- objetivo: melhorar as categorias das compras
