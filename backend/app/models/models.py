@@ -2,8 +2,7 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import JSON, DateTime, ForeignKey, Numeric, String, Text, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -26,7 +25,7 @@ class ConnectionStatus(str, Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -38,7 +37,7 @@ class User(Base):
 class BankConnection(Base):
     __tablename__ = "bank_connections"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     pluggy_item_id: Mapped[str] = mapped_column(String(255), nullable=False)
     bank_name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -53,7 +52,7 @@ class BankConnection(Base):
 class Transaction(Base):
     __tablename__ = "transactions"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     connection_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("bank_connections.id"), nullable=False)
 
@@ -79,12 +78,12 @@ class Transaction(Base):
 class UserRoutine(Base):
     __tablename__ = "user_routines"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), unique=True, nullable=False)
     work_start: Mapped[str | None] = mapped_column(String(5))   # "HH:MM"
     work_end: Mapped[str | None] = mapped_column(String(5))     # "HH:MM"
-    work_days: Mapped[list | None] = mapped_column(JSONB)       # [0,1,2,3,4] = seg-sex
-    patterns: Mapped[dict | None] = mapped_column(JSONB)        # padrões aprendidos
+    work_days: Mapped[list | None] = mapped_column(JSON)       # [0,1,2,3,4] = seg-sex
+    patterns: Mapped[dict | None] = mapped_column(JSON)        # padrões aprendidos
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     user: Mapped["User"] = relationship(back_populates="routine")
@@ -93,7 +92,7 @@ class UserRoutine(Base):
 class CollectivePattern(Base):
     __tablename__ = "collective_patterns"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     raw_pattern: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     merchant: Mapped[str] = mapped_column(String(255), nullable=False)
     category: Mapped[str] = mapped_column(String(100), nullable=False)
