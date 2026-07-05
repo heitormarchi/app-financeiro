@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from app.services.parsers.ofx_parser import parse_ofx
@@ -18,7 +18,14 @@ def test_rejeita_data_invalida():
 
 
 def test_lancamento_futuro_vai_para_scheduled():
-    r = parse_ofx(FIXTURE)
+    # A fixture ancora "20260706" como data futura em relação ao arquivo real
+    # original. Para o teste não decair com a passagem do tempo, substituímos
+    # essa data por uma data sempre-futura (hoje + 30 dias) antes de parsear —
+    # os outros testes usam FIXTURE sem essa substituição, então os anchors
+    # (FITID, valores, pegadinhas) continuam intactos.
+    future = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y%m%d")
+    content = FIXTURE.decode("utf-8").replace("20260706", future).encode("utf-8")
+    r = parse_ofx(content)
     assert len(r.scheduled) >= 1
     assert all(t.date > datetime.now(timezone.utc) for t in r.scheduled)
 
