@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.api.v1.endpoints import (dashboard, health, imports, ingest, nfce, pendencias,
-                                   push, sources, transactions)
+                                   push, scheduled, sources, transactions)
 from app.core.auth import require_api_key
 
 router = APIRouter()
@@ -17,5 +17,6 @@ protected.include_router(dashboard.router, tags=["dashboard"])
 protected.include_router(transactions.router, tags=["transactions"])
 protected.include_router(pendencias.router, tags=["pendencias"])
 protected.include_router(push.router, tags=["push"])
+protected.include_router(scheduled.router, tags=["scheduled"])
 
 router.include_router(protected)
