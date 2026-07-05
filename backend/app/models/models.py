@@ -5,7 +5,7 @@ from enum import Enum
 
 import sqlalchemy as sa
 from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 
@@ -128,6 +128,8 @@ class Transaction(Base):
     original_purchase_date: Mapped[date_type | None] = mapped_column(sa.Date)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     __table_args__ = (sa.UniqueConstraint("source_id", "external_id", name="uq_tx_source_external"),)
+
+    receipt_items: Mapped[list["ReceiptItem"]] = relationship(lazy="noload")
 
 
 class RawEvent(Base):
