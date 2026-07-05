@@ -49,3 +49,130 @@
     border-top-color: #333;
   }
 }
+
+.filtros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.erro {
+  color: #ef4444;
+}
+
+.valor-negativo {
+  color: #ef4444;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.valor-positivo {
+  color: #10b981;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.top5-list {
+  list-style: none;
+  padding: 0;
+}
+
+.top5-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.card-resumo {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f0f4ff;
+}
+
+.tx-list {
+  list-style: none;
+  padding: 0;
+}
+
+.tx-item {
+  border-bottom: 1px solid #eee;
+}
+
+.tx-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.tx-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tx-data {
+  font-size: 11px;
+  color: #888;
+}
+
+.tx-badges {
+  display: flex;
+  gap: 4px;
+}
+
+.badge {
+  font-size: 10px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.badge-provisoria {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tx-detalhe {
+  padding: 8px 0 12px;
+}
+
+.editor-categoria, .item-editor, .form-import {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.receipt-items {
+  margin-top: 8px;
+}
+
+.resultado-import {
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.qr-video {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.qr-manual {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .card-resumo {
+    background: #1e293b;
+  }
+  .badge {
+    background: #374151;
+  }
+}

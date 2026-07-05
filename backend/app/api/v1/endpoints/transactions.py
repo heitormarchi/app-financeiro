@@ -42,7 +42,7 @@ async def list_transactions(month: str | None = None, category: str | None = Non
             "id": str(t.id), "amount": float(t.amount), "date": t.date,
             "raw_description": t.raw_description, "merchant": t.merchant,
             "category": t.category, "subcategory": t.subcategory,
-            "entity": t.entity, "status": t.status,
+            "entity": t.entity, "status": t.status, "source_channel": t.source_channel,
             "is_invoice_payment": t.is_invoice_payment,
             "installment_no": t.installment_no, "installment_total": t.installment_total,
             "receipt_items": [
