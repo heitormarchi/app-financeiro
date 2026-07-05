@@ -1,0 +1,9 @@
+CAIXA: Compra aprovada em HOSTMF* FATURA 118136, R$ 117,49, 04/07 as 10:03. VISA VIRTUAL final 6425. Nao reconhece? Envie BL6425 p/cancelar cartao
+
+CAIXA: Compra aprovada em ANTHROPIC* CLAUDE SUB, R$ 110,00, 04/07 as 10:04. VISA VIRTUAL final 6425. Nao reconhece? Envie BL6425 p/cancelar cartao
+
+CAIXA: Compra aprovada em POSTO FL 53, R$ 150,00, 04/07 as 12:10. VISA final 3136. Nao reconhece? Envie BL3136 p/cancelar cartao
+
+CAIXA: Compra aprovada em EDSON RIBEIRO, R$ 20,00, 04/07 as 13:06. VISA final 3136. Nao reconhece? Envie BL3136 p/cancelar cartao
+
+CAIXA: Compra aprovada em MILIUM 22, R$ 36,80, 04/07 as 19:55. VISA final 3136. Nao reconhece? Envie BL3136 p/cancelar cartao
