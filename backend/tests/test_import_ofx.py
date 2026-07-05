@@ -1,3 +1,4 @@
+import uuid
 from pathlib import Path
 
 from sqlalchemy import func, select
@@ -41,3 +42,9 @@ async def test_enriquecimento_aplicado(client, session):
     await client.post(f"/api/v1/imports/ofx?source_id={src.id}", files=files)
     txs = (await session.execute(select(Transaction))).scalars().all()
     assert all(t.entity == Entity.pessoal for t in txs)
+
+
+async def test_source_inexistente_retorna_404(client):
+    files = {"file": ("extrato.ofx", FIXTURE, "application/octet-stream")}
+    r = await client.post(f"/api/v1/imports/ofx?source_id={uuid.uuid4()}", files=files)
+    assert r.status_code == 404
