@@ -32,7 +32,8 @@ async def ingest_sms(body: SmsBody, response: Response,
         raw.status = RawStatus.failed
         raw.error = "formato de SMS não reconhecido"
         session.add(Pendencia(user_id=user.id, type=PendenciaType.parse_failed,
-                              payload={"canal": "sms", "texto": body.text}))
+                              payload={"canal": "sms", "texto": body.text,
+                                       "raw_event_id": str(raw.id)}))
         await session.commit()
         response.status_code = 202
         return {"parsed": False}

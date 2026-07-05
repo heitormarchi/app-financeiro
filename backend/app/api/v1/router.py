@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from app.api.v1.endpoints import dashboard, health, imports, ingest, nfce, sources, transactions
+from app.api.v1.endpoints import (dashboard, health, imports, ingest, nfce, pendencias,
+                                   sources, transactions)
 from app.core.auth import require_api_key
 
 router = APIRouter()
@@ -14,6 +15,7 @@ protected.include_router(ingest.router, tags=["ingest"])
 protected.include_router(nfce.router, tags=["nfce"])
 protected.include_router(dashboard.router, tags=["dashboard"])
 protected.include_router(transactions.router, tags=["transactions"])
+protected.include_router(pendencias.router, tags=["pendencias"])
 
-# Task 10 adiciona: pendencias. Task 11 adiciona: push.
+# Task 11 adiciona: push.
 router.include_router(protected)
