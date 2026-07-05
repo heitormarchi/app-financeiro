@@ -62,3 +62,38 @@ Gere um insight útil e acionável sobre o padrão financeiro do usuário."""
     )
 
     return response.choices[0].message.content
+
+
+WEEKLY_SYSTEM_PROMPT = """Você é um consultor financeiro pessoal direto e empático, falando com um brasileiro sobre o resumo semanal de suas finanças.
+
+Regras:
+- Máximo 4 frases
+- Cite a categoria que mais desviou da média quando relevante
+- Seja específico com valores em reais
+- Fale como um amigo que entende de finanças, não como um robô"""
+
+
+async def generate_weekly_summary(agregados: dict) -> str:
+    """Generate the weekly summary text from pre-computed spend aggregates."""
+    categorias = "\n".join(
+        f"- {c}: R${v:.2f}" for c, v in agregados["por_categoria"].items()
+    )
+    user_prompt = f"""Resumo da semana:
+
+Gasto total: R${agregados['total']:.2f}
+Média das 4 semanas anteriores: R${agregados['vs_media_30d']:.2f}
+Por categoria:
+{categorias}
+
+Gere o resumo semanal."""
+
+    response = await client.chat.completions.create(
+        model=OPENROUTER_MODEL,
+        max_tokens=300,
+        messages=[
+            {"role": "system", "content": WEEKLY_SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ],
+    )
+
+    return response.choices[0].message.content
