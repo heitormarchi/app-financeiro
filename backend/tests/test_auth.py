@@ -6,3 +6,8 @@ async def test_health_sem_api_key(client):
 async def test_rota_protegida_sem_key(client):
     r = await client.get("/api/v1/transactions", headers={"X-API-Key": "errada"})
     assert r.status_code == 401
+
+
+async def test_rota_protegida_com_key_valida(client):
+    r = await client.get("/api/v1/transactions")
+    assert r.status_code == 200
