@@ -209,6 +209,25 @@ section {
   color: #666;
 }
 
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 100;
+}
+
+.modal-box {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 400px;
+  width: 100%;
+}
+
 @media (prefers-color-scheme: dark) {
   .card-resumo {
     background: #1e293b;
@@ -218,5 +237,8 @@ section {
   }
   .banner {
     background: #1e293b;
+  }
+  .modal-box {
+    background: #1c1c1e;
   }
 }
