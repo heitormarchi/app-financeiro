@@ -31,12 +31,22 @@ async def _run_inter_sync_scheduled():
         logging.exception("sync_inter falhou — fonte fica degradada até o próximo job")
 
 
+async def _run_projection_job_scheduled():
+    from app.services.projection_service import run_projection_job
+    try:
+        async with AsyncSessionLocal() as session:
+            await run_projection_job(session)
+    except Exception:
+        logging.exception("run_projection_job falhou")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
     scheduler = AsyncIOScheduler(timezone="America/Sao_Paulo")
     scheduler.add_job(_run_weekly_job_scheduled, CronTrigger(day_of_week="sun", hour=18, minute=0))
     scheduler.add_job(_run_inter_sync_scheduled, CronTrigger(hour=7, minute=0))
+    scheduler.add_job(_run_projection_job_scheduled, CronTrigger(hour=7, minute=30))
     scheduler.start()
     yield
     scheduler.shutdown(wait=False)
