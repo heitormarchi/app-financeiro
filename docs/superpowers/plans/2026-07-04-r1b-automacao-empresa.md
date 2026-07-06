@@ -1,6 +1,6 @@
 # R1b — Automação e Empresa: Plano de Implementação
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** WhatsApp como canal universal de ingestão, visão para prints, Inter Empresas sincronizado via API, projeção de saldo com sugestão de transferência e execução de Pix com confirmação explícita.
 
@@ -33,9 +33,9 @@
 **Interfaces:**
 - Produces: `POST /api/v1/webhooks/whatsapp/{token}` (payload Evolution `messages.upsert`); `whatsapp_service.send_text(text: str) -> None` (responde ao Heitor); `whatsapp_service.get_media_bytes(message_data: dict) -> tuple[bytes, str]` (conteúdo + mimetype); `handle_incoming(session, data: dict) -> str | None` (resposta a enviar).
 
-- [ ] **Step 1: Validar contra a instância real.** Com a Evolution do Heitor rodando: configurar webhook para URL de teste, enviar um documento e capturar o JSON real (salvar anonimizado em `backend/tests/fixtures/evolution_document.json` e `evolution_image.json`). Confirmar endpoints da versão instalada: envio de texto (`POST {base}/message/sendText/{instance}`, header `apikey`) e download de mídia (`POST {base}/chat/getBase64FromMediaMessage/{instance}`). Ajustar os stubs abaixo se divergirem.
+- [x] **Step 1: Validar contra a instância real.** Com a Evolution do Heitor rodando: configurar webhook para URL de teste, enviar um documento e capturar o JSON real (salvar anonimizado em `backend/tests/fixtures/evolution_document.json` e `evolution_image.json`). Confirmar endpoints da versão instalada: envio de texto (`POST {base}/message/sendText/{instance}`, header `apikey`) e download de mídia (`POST {base}/chat/getBase64FromMediaMessage/{instance}`). Ajustar os stubs abaixo se divergirem.
 
-- [ ] **Step 2: Config** — adicionar ao `Settings`:
+- [x] **Step 2: Config** — adicionar ao `Settings`:
 
 ```python
     evolution_base_url: str = ""
@@ -51,7 +51,7 @@
     openrouter_vision_model: str = "google/gemini-2.0-flash-001"
 ```
 
-- [ ] **Step 3: Testes falhando** — `backend/tests/test_whatsapp_webhook.py`:
+- [x] **Step 3: Testes falhando** — `backend/tests/test_whatsapp_webhook.py`:
 
 ```python
 import json
@@ -101,9 +101,9 @@ async def test_documento_ofx_roteado(client, session, monkeypatch):
     assert sent and "novas" in sent[0]
 ```
 
-- [ ] **Step 4: Rodar e ver falhar.**
+- [x] **Step 4: Rodar e ver falhar.**
 
-- [ ] **Step 5: Implementar** — `whatsapp_service.py`:
+- [x] **Step 5: Implementar** — `whatsapp_service.py`:
 
 ```python
 import base64
@@ -169,7 +169,7 @@ async def whatsapp_webhook(token: str, request: Request,
     return {"ok": True}
 ```
 
-- [ ] **Step 6: Rodar testes** → 3 PASS. **Step 7: Commit** — `git commit -m "feat: webhook whatsapp evolution com token e allowlist"`
+- [x] **Step 6: Rodar testes** → 3 PASS. **Step 7: Commit** — `git commit -m "feat: webhook whatsapp evolution com token e allowlist"`
 
 ---
 
@@ -184,7 +184,7 @@ async def whatsapp_webhook(token: str, request: Request,
 - Consumes: `import_ofx`, `import_fatura` (R1a Task 4/6), `process_nfce` (R1a Task 8), `extract_scheduled_from_image` (Task 3 — nesta task, stub que levanta `NotImplementedError` capturado como resposta "ainda não sei ler este print").
 - Produces: `route_document(session, filename: str, content: bytes, mimetype: str) -> str` — SEMPRE retorna resposta humana em PT-BR; nunca levanta exceção (erros viram resposta + `Pendencia`).
 
-- [ ] **Step 1: Testes falhando** — `backend/tests/test_document_router.py`:
+- [x] **Step 1: Testes falhando** — `backend/tests/test_document_router.py`:
 
 ```python
 from pathlib import Path
@@ -212,9 +212,9 @@ async def test_arquivo_desconhecido_gera_resposta_e_pendencia(client, session):
     assert (await session.execute(select(Pendencia))).scalars().first() is not None
 ```
 
-- [ ] **Step 2: Rodar e ver falhar.**
+- [x] **Step 2: Rodar e ver falhar.**
 
-- [ ] **Step 3: Implementar** — `document_router.py`:
+- [x] **Step 3: Implementar** — `document_router.py`:
 
 ```python
 import io
@@ -291,7 +291,7 @@ def _try_decode_qr(content: bytes) -> str | None:
     return None
 ```
 
-- [ ] **Step 4: Rodar testes** → 2 PASS. **Step 5: Commit** — `git commit -m "feat: roteador de documentos do whatsapp"`
+- [x] **Step 4: Rodar testes** → 2 PASS. **Step 5: Commit** — `git commit -m "feat: roteador de documentos do whatsapp"`
 
 ---
 
@@ -304,7 +304,7 @@ def _try_decode_qr(content: bytes) -> str | None:
 **Interfaces:**
 - Produces: `extract_scheduled_from_image(session, image: bytes) -> int` (nº de futuros criados) e `parse_vision_json(raw: str) -> list[VisionScheduled]` com `VisionScheduled(due_date: date, description: str, amount: Decimal)` (Pydantic, valores negativos = débito). Dedup igual ao de `ScheduledTransaction` do R1a (data+valor+descrição).
 
-- [ ] **Step 1: Testes falhando** — `backend/tests/test_vision.py`:
+- [x] **Step 1: Testes falhando** — `backend/tests/test_vision.py`:
 
 ```python
 from app.services.vision_service import parse_vision_json
@@ -327,9 +327,9 @@ def test_json_invalido_levanta():
         parse_vision_json("não sei ler isso")
 ```
 
-- [ ] **Step 2: Rodar e ver falhar.**
+- [x] **Step 2: Rodar e ver falhar.**
 
-- [ ] **Step 3: Implementar** — `vision_service.py`:
+- [x] **Step 3: Implementar** — `vision_service.py`:
 
 ```python
 import base64
@@ -404,9 +404,9 @@ async def extract_scheduled_from_image(session, image: bytes) -> int:
     return created
 ```
 
-- [ ] **Step 4: Rodar testes** → 3 PASS. Validação real: rodar contra `docs/exemplos/WhatsApp Image 2026-07-04 at 10.53.09.jpeg` e conferir os 7 lançamentos (R$ 7,37 GTI, R$ 690,00 MY DOGGIE, R$ 0,05 poupança, R$ 81,90 CLARO, R$ 117,41 CELESC, R$ 365,10 Pix Ivone, R$ 436,05 HUBCARE).
+- [x] **Step 4: Rodar testes** → 3 PASS. Validação real: rodar contra `docs/exemplos/WhatsApp Image 2026-07-04 at 10.53.09.jpeg` e conferir os 7 lançamentos (R$ 7,37 GTI, R$ 690,00 MY DOGGIE, R$ 0,05 poupança, R$ 81,90 CLARO, R$ 117,41 CELESC, R$ 365,10 Pix Ivone, R$ 436,05 HUBCARE).
 
-- [ ] **Step 5: Commit** — `git commit -m "feat: visao para prints de lancamentos futuros"`
+- [x] **Step 5: Commit** — `git commit -m "feat: visao para prints de lancamentos futuros"`
 
 ---
 
@@ -423,7 +423,7 @@ async def extract_scheduled_from_image(session, image: bytes) -> int:
 - Produces: `InterClient` com `get_token() -> str` (OAuth2 client_credentials, mTLS `cert=(settings.inter_cert_path, settings.inter_key_path)`, cache até expirar), `get_saldo() -> Decimal`, `get_extrato(dias: int = 30) -> list[dict]`, `get_pagamentos_agendados() -> list[dict]`; `sync_inter(session) -> ImportReport` (transações `source_channel=inter`, `entity=empresa`, dedup por `idTransacao`; saldo → `Source.balance`; agendados → `ScheduledTransaction(origin=inter_agendado)`).
 - Endpoints Inter (validar na doc oficial ao executar): token `POST https://cdpj.partners.bancointer.com.br/oauth/v2/token` (scopes `extrato.read pagamento-pix.write pagamento-pix.read`), extrato `GET /banking/v2/extrato/completo`, saldo `GET /banking/v2/saldo`, pagamentos agendados `GET /banking/v2/pagamento` — TODOS com mTLS.
 
-- [ ] **Step 1: Teste falhando** — `backend/tests/test_inter.py` (API mockada):
+- [x] **Step 1: Teste falhando** — `backend/tests/test_inter.py` (API mockada):
 
 ```python
 from decimal import Decimal
@@ -467,7 +467,7 @@ async def test_sync_cria_transacoes_empresa(session):
     assert r2.novas == 0
 ```
 
-- [ ] **Step 2: Rodar e ver falhar.** — **Step 3: Migração** dos campos de `Source` (`alembic revision --autogenerate -m "source balance"` + upgrade). — **Step 4: Implementar** `inter_service.py`:
+- [x] **Step 2: Rodar e ver falhar.** — **Step 3: Migração** dos campos de `Source` (`alembic revision --autogenerate -m "source balance"` + upgrade). — **Step 4: Implementar** `inter_service.py`:
 
 ```python
 import time
@@ -580,9 +580,9 @@ async def sync_inter(session) -> ImportReport:
 
 Job diário em `main.py`: `scheduler.add_job(run_inter_sync, CronTrigger(hour=7, minute=0))` (wrapper que abre sessão própria; falha → log + fonte degradada, sem crash).
 
-- [ ] **Step 5: Rodar testes** → PASS. — **Step 6: Setup real** (documentar em `docs/setup-inter.md`): gerar certificado no portal Inter Empresas, colocar `.crt`/`.key` na VPS via volume, preencher `.env`, rodar sync manual (`POST /api/v1/inter/sync` — rota fina chamando `sync_inter`).
+- [x] **Step 5: Rodar testes** → PASS. — **Step 6: Setup real** (documentar em `docs/setup-inter.md`): gerar certificado no portal Inter Empresas, colocar `.crt`/`.key` na VPS via volume, preencher `.env`, rodar sync manual (`POST /api/v1/inter/sync` — rota fina chamando `sync_inter`).
 
-- [ ] **Step 7: Commit** — `git commit -m "feat: sync Inter Empresas com saldo e agendamentos"`
+- [x] **Step 7: Commit** — `git commit -m "feat: sync Inter Empresas com saldo e agendamentos"`
 
 ---
 
@@ -601,7 +601,7 @@ Job diário em `main.py`: `scheduler.add_job(run_inter_sync, CronTrigger(hour=7,
   - `reconcile_scheduled(session)` — `previsto` + transação real com mesmo valor (±R$ 0,01) e data ±2 dias → `efetivado` (chamar ao final de todo import — adicionar chamada em `import_ofx`/`import_fatura`/`sync_inter`)
   - `GET /api/v1/scheduled/projection?days=30`; `run_projection_job()` = reconcile + detect + push da sugestão
 
-- [ ] **Step 1: Testes falhando** — `backend/tests/test_projection.py`:
+- [x] **Step 1: Testes falhando** — `backend/tests/test_projection.py`:
 
 ```python
 from datetime import date, datetime, timedelta, timezone
@@ -662,9 +662,9 @@ async def test_reconcile_marca_efetivado(session):
     assert st.status == ScheduledStatus.efetivado
 ```
 
-- [ ] **Step 2: Rodar e ver falhar.** — **Step 3: Implementar** `projection_service.py`: `compute_projection` agrupa `scheduled_transactions(status=previsto)` por fonte e acumula dia a dia a partir de `Source.balance` (ou 0 com flag); `detect_low_balance` acha o primeiro dia negativo de fonte pessoal, calcula `valor = abs(min_saldo) arredondado para cima em múltiplos de R$ 100`, verifica `TransferSuggestion.status == "sugerida"` aberta (dedup), cria com `reason` citando data e até 3 descrições de futuros, e retorna as novas; `run_projection_job` chama `reconcile_scheduled` → `detect_low_balance` → para cada nova sugestão `send_push(session, "Saldo baixo previsto", reason)`. `GET /scheduled/projection` retorna `compute_projection`.
+- [x] **Step 2: Rodar e ver falhar.** — **Step 3: Implementar** `projection_service.py`: `compute_projection` agrupa `scheduled_transactions(status=previsto)` por fonte e acumula dia a dia a partir de `Source.balance` (ou 0 com flag); `detect_low_balance` acha o primeiro dia negativo de fonte pessoal, calcula `valor = abs(min_saldo) arredondado para cima em múltiplos de R$ 100`, verifica `TransferSuggestion.status == "sugerida"` aberta (dedup), cria com `reason` citando data e até 3 descrições de futuros, e retorna as novas; `run_projection_job` chama `reconcile_scheduled` → `detect_low_balance` → para cada nova sugestão `send_push(session, "Saldo baixo previsto", reason)`. `GET /scheduled/projection` retorna `compute_projection`.
 
-- [ ] **Step 4: Rodar testes** → 3 PASS. **Step 5: Commit** — `git commit -m "feat: projecao de saldo e sugestoes de transferencia"`
+- [x] **Step 4: Rodar testes** → 3 PASS. **Step 5: Commit** — `git commit -m "feat: projecao de saldo e sugestoes de transferencia"`
 
 ---
 
@@ -678,7 +678,7 @@ async def test_reconcile_marca_efetivado(session):
 **Interfaces:**
 - Produces: `InterClient.send_pix(valor: Decimal, chave_destino: str, descricao: str) -> str` (retorna id/e2e do Pix; endpoint `POST /banking/v2/pix` — validar na doc oficial); rotas `GET /api/v1/transfers?status=sugerida`, `POST /api/v1/transfers/{id}/confirm` body `{"amount": "500.00"}` (usa `settings.inter_pix_dest_key` como destino; muda status `sugerida→executada`, grava `pix_id`; erro da API → status permanece `sugerida`, resposta 502 com mensagem legível), `POST /api/v1/transfers/{id}/dismiss` (→ `recusada`).
 
-- [ ] **Step 1: Testes falhando** — `backend/tests/test_transfers.py`:
+- [x] **Step 1: Testes falhando** — `backend/tests/test_transfers.py`:
 
 ```python
 from decimal import Decimal
@@ -724,7 +724,7 @@ async def test_dismiss(client, session):
     assert s.status == "recusada"
 ```
 
-- [ ] **Step 2: Rodar e ver falhar.** — **Step 3: Implementar.** `send_pix`:
+- [x] **Step 2: Rodar e ver falhar.** — **Step 3: Implementar.** `send_pix`:
 
 ```python
     async def send_pix(self, valor: Decimal, chave_destino: str, descricao: str) -> str:
@@ -741,7 +741,7 @@ async def test_dismiss(client, session):
 
 `endpoints/transfers.py` conforme interface (validações: sugestão existe e está `sugerida`; `amount > 0` e `<= 5000` como teto sanidade hardcoded com comentário).
 
-- [ ] **Step 4: Rodar testes** → 3 PASS. **Step 5: Commit** — `git commit -m "feat: transferencia pix inter com confirmacao explicita"`
+- [x] **Step 4: Rodar testes** → 3 PASS. **Step 5: Commit** — `git commit -m "feat: transferencia pix inter com confirmacao explicita"`
 
 ---
 
@@ -750,10 +750,10 @@ async def test_dismiss(client, session):
 **Files:**
 - Modify: `frontend/src/pages/Futuros.tsx`, `frontend/src/pages/Dashboard.tsx`, `frontend/src/pages/Config.tsx`
 
-- [ ] **Step 1: Futuros.tsx** — gráfico de linha Recharts com `GET /scheduled/projection` (uma linha por fonte, linha de zero destacada); lista de futuros por data com badge da origem (extrato/print/Inter/fatura); seção "Sugestões": cards de `GET /transfers?status=sugerida` com motivo, valor editável, botões **[Confirmar Pix]** (→ modal de confirmação mostrando valor/destino → `POST /confirm`; sucesso mostra e2e id) e **[Dispensar]**. Erro 502 → mensagem "Pix falhou — faça manualmente no app do Inter" sem remover o card.
-- [ ] **Step 2: Dashboard.tsx** — seletor de entidade já existente do R1a passa a ter dados reais de `empresa` (nenhuma mudança de código além de garantir que `empresa` aparece quando houver fonte).
-- [ ] **Step 3: Config.tsx** — seção Inter: status do certificado (dias p/ expirar — campo novo `GET /sources` já expõe), último sync, botão "Sincronizar agora" (`POST /inter/sync`); seção WhatsApp: instruções de configuração do webhook + teste ("envie um OFX para si mesmo").
-- [ ] **Step 4: Verificar** com backend local (Inter mockado) e `npx tsc --noEmit`. **Step 5: Commit** — `git commit -m "feat: tela futuros com projecao e confirmacao de transferencia"`
+- [x] **Step 1: Futuros.tsx** — gráfico de linha Recharts com `GET /scheduled/projection` (uma linha por fonte, linha de zero destacada); lista de futuros por data com badge da origem (extrato/print/Inter/fatura); seção "Sugestões": cards de `GET /transfers?status=sugerida` com motivo, valor editável, botões **[Confirmar Pix]** (→ modal de confirmação mostrando valor/destino → `POST /confirm`; sucesso mostra e2e id) e **[Dispensar]**. Erro 502 → mensagem "Pix falhou — faça manualmente no app do Inter" sem remover o card.
+- [x] **Step 2: Dashboard.tsx** — seletor de entidade já existente do R1a passa a ter dados reais de `empresa` (nenhuma mudança de código além de garantir que `empresa` aparece quando houver fonte).
+- [x] **Step 3: Config.tsx** — seção Inter: status do certificado (dias p/ expirar — campo novo `GET /sources` já expõe), último sync, botão "Sincronizar agora" (`POST /inter/sync`); seção WhatsApp: instruções de configuração do webhook + teste ("envie um OFX para si mesmo").
+- [x] **Step 4: Verificar** com backend local (Inter mockado) e `npx tsc --noEmit`. **Step 5: Commit** — `git commit -m "feat: tela futuros com projecao e confirmacao de transferencia"`
 
 ---
 
