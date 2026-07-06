@@ -19,6 +19,18 @@ class Settings(BaseSettings):
     environment: str = "development"
     api_v1_prefix: str = "/api/v1"
 
+    evolution_base_url: str = ""
+    evolution_api_key: str = ""
+    evolution_instance: str = ""
+    evolution_webhook_token: str = ""
+    whatsapp_allowed_jid: str = ""
+    inter_client_id: str = ""
+    inter_client_secret: str = ""
+    inter_cert_path: str = ""
+    inter_key_path: str = ""
+    inter_pix_dest_key: str = ""
+    openrouter_vision_model: str = "google/gemini-2.0-flash-001"
+
     @field_validator("database_url", mode="before")
     @classmethod
     def fix_database_url(cls, v: str) -> str:
