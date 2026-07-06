@@ -39,7 +39,7 @@ async def process_nfce(session: AsyncSession, qr_url: str, transport: Transport)
         session.add(Pendencia(user_id=user.id, type=PendenciaType.parse_failed,
                               payload={"canal": "nfce", "qr_url": qr_url}))
         await session.commit()
-        return {"parsed": False}
+        return {"parsed": False, "erro": str(e)}
     tx = await _find_or_create_tx(session, user, parsed)
     raw.transaction_id = tx.id
     rules = {r.pattern: r for r in

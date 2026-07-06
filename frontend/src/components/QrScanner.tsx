@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 import { api } from "../api";
 
-type NfceResult = { itens?: number; conciliada?: boolean; parsed?: boolean; [k: string]: unknown };
+type NfceResult = { itens?: number; conciliada?: boolean; parsed?: boolean; erro?: string; [k: string]: unknown };
 
 declare global {
   interface Window {
@@ -15,10 +15,17 @@ declare global {
 export default function QrScanner({ onFechar }: { onFechar: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [resultado, setResultado] = useState<NfceResult | null>(null);
   const [urlManual, setUrlManual] = useState("");
   const [processando, setProcessando] = useState(false);
+
+  function pararCamera() {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+  }
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -28,6 +35,7 @@ export default function QrScanner({ onFechar }: { onFechar: () => void }) {
     async function iniciar() {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           await videoRef.current.play();
@@ -56,6 +64,7 @@ export default function QrScanner({ onFechar }: { onFechar: () => void }) {
               }
             }
             if (url && url.includes("sat.sef.sc.gov.br")) {
+              pararCamera();
               await processar(url);
               return;
             }
@@ -81,6 +90,7 @@ export default function QrScanner({ onFechar }: { onFechar: () => void }) {
   }, []);
 
   async function processar(qrUrl: string) {
+    pararCamera();
     setProcessando(true);
     setErro(null);
     try {
@@ -111,7 +121,13 @@ export default function QrScanner({ onFechar }: { onFechar: () => void }) {
           </div>
         </>
       )}
-      {resultado && (
+      {resultado && resultado.parsed === false && (
+        <p className="erro">
+          Não foi possível ler o cupom{resultado.erro ? `: ${resultado.erro}` : ""}. Uma pendência
+          foi registrada para revisão manual.
+        </p>
+      )}
+      {resultado && resultado.parsed !== false && (
         <p className="resultado-import">
           {resultado.itens ?? "?"} itens importados
           {resultado.conciliada ? ", conciliado com a compra ✓" : ""}
