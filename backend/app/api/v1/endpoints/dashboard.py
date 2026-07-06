@@ -24,7 +24,7 @@ def _add_entity_filter(stmt, entity: str | None):
 
 
 @router.get("/summary")
-async def dashboard_summary(month: str, entity: str | None = None,
+async def dashboard_summary(month: str, entity: str | None = None, months: int = 6,
                             session: AsyncSession = Depends(get_session)):
     start, end = _month_bounds(month)
     base_filters = (Transaction.amount < 0, Transaction.is_invoice_payment.is_(False),
@@ -43,7 +43,7 @@ async def dashboard_summary(month: str, entity: str | None = None,
 
     evolucao = []
     y, mo = start.year, start.month
-    for _ in range(6):
+    for _ in range(months):
         m_start = date(y, mo, 1)
         m_end = date(y + 1, 1, 1) if mo == 12 else date(y, mo + 1, 1)
         m_stmt = _add_entity_filter(

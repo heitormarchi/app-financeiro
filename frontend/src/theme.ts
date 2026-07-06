@@ -31,8 +31,14 @@ export function chartTheme(dark: boolean) {
     axis: "#898781",
     surface: dark ? "#1d1a11" : "#fdfcf7",
     negative: dark ? "#e2705f" : "#ab3a2c",
+    positive: dark ? "#56bd8c" : "#1c6e4a",
   };
 }
+
+export const MESES_LONGOS = [
+  "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+  "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+];
 
 export function tooltipProps(dark: boolean) {
   return {

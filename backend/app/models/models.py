@@ -74,6 +74,12 @@ class ScheduledOrigin(str, Enum):
     print_vision = "print_vision"
     inter_agendado = "inter_agendado"
     fatura_a_vencer = "fatura_a_vencer"
+    manual = "manual"
+
+
+class RecurrenceFrequency(str, Enum):
+    mensal = "mensal"
+    anual = "anual"
 
 
 class ScheduledStatus(str, Enum):
@@ -199,6 +205,23 @@ class ScheduledTransaction(Base):
     origin: Mapped[ScheduledOrigin] = mapped_column(String(20), nullable=False)
     status: Mapped[ScheduledStatus] = mapped_column(String(12), nullable=False, default=ScheduledStatus.previsto)
     transaction_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("transactions.id"))
+    recurring_rule_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("recurring_rules.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class RecurringRule(Base):
+    __tablename__ = "recurring_rules"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    description: Mapped[str] = mapped_column(String(500), nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    entity: Mapped[Entity] = mapped_column(String(10), nullable=False, default=Entity.pessoal)
+    source_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("sources.id"))
+    frequency: Mapped[RecurrenceFrequency] = mapped_column(String(10), nullable=False)
+    day: Mapped[int] = mapped_column(nullable=False)
+    month: Mapped[int | None] = mapped_column()
+    start_date: Mapped[date_type] = mapped_column(sa.Date, nullable=False)
+    active: Mapped[bool] = mapped_column(default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

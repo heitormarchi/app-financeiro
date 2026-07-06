@@ -74,7 +74,7 @@ export default function BottomNav() {
       <NavLink to="/futuros"
         className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
         <IconCalendario />
-        <span>Futuros</span>
+        <span>Fluxo</span>
       </NavLink>
       <NavLink to="/mais"
         className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>

@@ -4,8 +4,9 @@ from decimal import ROUND_CEILING, Decimal
 from sqlalchemy import select
 
 from app.core.auth import get_single_user
-from app.models.models import (Entity, ScheduledStatus, ScheduledTransaction, Source,
+from app.models.models import (Entity, RecurringRule, ScheduledStatus, ScheduledTransaction, Source,
                                Transaction, TransferSuggestion)
+from app.services.date_utils import add_months
 from app.services.push_service import send_push
 
 
@@ -93,6 +94,81 @@ async def reconcile_scheduled(session) -> None:
 
 
 async def run_projection_job(session) -> None:
+    from app.services.recurring_service import materialize_recurring
+    await materialize_recurring(session)
     await reconcile_scheduled(session)
     for sug in await detect_low_balance(session):
         await send_push(session, "Saldo baixo previsto", sug.reason)
+
+
+async def project_future_installments(session, entity: str | None = None) -> list[dict]:
+    """Projeta as parcelas restantes de compras já parceladas no cartão, a partir das
+    transações já importadas (installment_no/installment_total) — nenhum dado novo é
+    necessário, a fatura do cartão já informa a parcela e o total em cada linha."""
+    stmt = select(Transaction).where(
+        Transaction.installment_total.is_not(None),
+        Transaction.installment_no < Transaction.installment_total,
+    )
+    if entity and entity != "todas":
+        stmt = stmt.where(Transaction.entity == Entity(entity))
+    txs = (await session.execute(stmt)).scalars().all()
+
+    latest: dict[tuple, Transaction] = {}
+    for t in txs:
+        key = (t.source_id, t.original_purchase_date, t.installment_total, t.merchant or t.raw_description)
+        cur = latest.get(key)
+        if cur is None or (t.installment_no or 0) > (cur.installment_no or 0):
+            latest[key] = t
+
+    result = []
+    for (source_id, _orig_date, total, desc), t in latest.items():
+        restantes = total - t.installment_no
+        base = t.date.date() if isinstance(t.date, datetime) else t.date
+        parcelas = [
+            {"competencia": add_months(base, i).strftime("%Y-%m"), "numero": t.installment_no + i,
+             "valor": abs(float(t.amount))}
+            for i in range(1, restantes + 1)
+        ]
+        result.append({
+            "descricao": desc, "source_id": str(source_id) if source_id else None,
+            "entity": t.entity, "installment_no_atual": t.installment_no,
+            "installment_total": total, "valor_parcela": abs(float(t.amount)),
+            "parcelas_restantes": parcelas,
+        })
+    result.sort(key=lambda r: r["descricao"])
+    return result
+
+
+async def compute_monthly_cashflow(session, months: int = 6, entity: str | None = None) -> list[dict]:
+    """Agrega, mês a mês, os lançamentos futuros conhecidos: scheduled_transactions
+    (automáticos + manuais/recorrentes) e as parcelas de cartão ainda restantes."""
+    ent = Entity(entity) if entity and entity != "todas" else None
+
+    scheduled = (await session.execute(select(ScheduledTransaction).where(
+        ScheduledTransaction.status == ScheduledStatus.previsto))).scalars().all()
+    sources = {s.id: s for s in (await session.execute(select(Source))).scalars().all()}
+    rules = {r.id: r for r in (await session.execute(select(RecurringRule))).scalars().all()}
+
+    today = date.today()
+    buckets: dict[str, Decimal] = {
+        add_months(date(today.year, today.month, 1), i).strftime("%Y-%m"): Decimal("0")
+        for i in range(months)
+    }
+
+    for s in scheduled:
+        if ent is not None:
+            rule = rules.get(s.recurring_rule_id) if s.recurring_rule_id else None
+            src = sources.get(s.source_id) if s.source_id else None
+            item_entity = rule.entity if rule else (src.entity if src else None)
+            if item_entity != ent:
+                continue
+        key = s.due_date.strftime("%Y-%m")
+        if key in buckets:
+            buckets[key] += s.amount
+
+    for item in await project_future_installments(session, entity=entity):
+        for p in item["parcelas_restantes"]:
+            if p["competencia"] in buckets:
+                buckets[p["competencia"]] -= Decimal(str(p["valor"]))
+
+    return [{"month": m, "total": float(v)} for m, v in buckets.items()]

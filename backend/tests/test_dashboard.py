@@ -29,6 +29,17 @@ async def test_summary_exclui_pagamento_fatura(client, session):
     assert float(r.json()["total_gasto"]) == 100.00
 
 
+async def test_evolucao_aceita_months_param(client, session):
+    user = await get_single_user(session)
+    src = Source(user_id=user.id, type=SourceType.bb_conta, entity=Entity.pessoal, bank_name="BB")
+    session.add(src); await session.flush()
+    await _tx(session, src, user, "-100.00", "MERCADO A", category="Mercado")
+    await session.commit()
+    r = await client.get("/api/v1/dashboard/summary?month=2026-07&entity=pessoal&months=12")
+    assert r.status_code == 200
+    assert len(r.json()["evolucao"]) == 12
+
+
 async def test_patch_categoria(client, session):
     user = await get_single_user(session)
     src = Source(user_id=user.id, type=SourceType.bb_conta, entity=Entity.pessoal, bank_name="BB")
