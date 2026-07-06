@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -19,11 +20,23 @@ async def _run_weekly_job_scheduled():
         await run_weekly_job(session)
 
 
+async def _run_inter_sync_scheduled():
+    if not settings.inter_client_id:
+        return
+    from app.services.inter_service import sync_inter
+    try:
+        async with AsyncSessionLocal() as session:
+            await sync_inter(session)
+    except Exception:
+        logging.exception("sync_inter falhou — fonte fica degradada até o próximo job")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
     scheduler = AsyncIOScheduler(timezone="America/Sao_Paulo")
     scheduler.add_job(_run_weekly_job_scheduled, CronTrigger(day_of_week="sun", hour=18, minute=0))
+    scheduler.add_job(_run_inter_sync_scheduled, CronTrigger(hour=7, minute=0))
     scheduler.start()
     yield
     scheduler.shutdown(wait=False)

@@ -14,6 +14,8 @@ async def main():
             (SourceType.caixa_cartao, "Cartão de Crédito Caixa"),
         ]:
             session.add(Source(user_id=user.id, type=t, entity=Entity.pessoal, bank_name=name))
+        session.add(Source(user_id=user.id, type=SourceType.inter_pj, entity=Entity.empresa,
+                           bank_name="Inter Empresas"))
         await session.commit()
 
 

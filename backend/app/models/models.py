@@ -102,6 +102,9 @@ class Source(Base):
     bank_name: Mapped[str] = mapped_column(String(255), nullable=False)
     pdf_password_encrypted: Mapped[str | None] = mapped_column(Text)
     last_ingested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    balance: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
+    balance_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    low_balance_threshold: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
