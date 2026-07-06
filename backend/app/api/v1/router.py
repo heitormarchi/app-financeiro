@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends
 
 from app.api.v1.endpoints import (dashboard, health, imports, ingest, nfce, pendencias,
-                                   push, scheduled, sources, transactions)
+                                   push, scheduled, sources, transactions, webhooks)
 from app.core.auth import require_api_key
 
 router = APIRouter()
 router.include_router(health.router, tags=["health"])
+router.include_router(webhooks.router, tags=["webhooks"])  # segurança própria via token+JID
 
 protected = APIRouter(dependencies=[Depends(require_api_key)])
 

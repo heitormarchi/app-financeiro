@@ -1,0 +1,23 @@
+{
+  "event": "messages.upsert",
+  "instance": "heitor-instance",
+  "data": {
+    "key": {
+      "remoteJid": "5548999990000@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3EB0C767D097B7C6D1F5"
+    },
+    "pushName": "Heitor",
+    "message": {
+      "documentMessage": {
+        "url": "https://mmg.whatsapp.net/v/example",
+        "mimetype": "application/octet-stream",
+        "fileName": "extrato.ofx",
+        "fileLength": "12345",
+        "title": "extrato.ofx"
+      }
+    },
+    "messageType": "documentMessage",
+    "messageTimestamp": 1751640000
+  }
+}

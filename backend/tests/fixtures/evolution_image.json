@@ -1,0 +1,21 @@
+{
+  "event": "messages.upsert",
+  "instance": "heitor-instance",
+  "data": {
+    "key": {
+      "remoteJid": "5548999990000@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3EB0C767D097B7C6D1F6"
+    },
+    "pushName": "Heitor",
+    "message": {
+      "imageMessage": {
+        "url": "https://mmg.whatsapp.net/v/example2",
+        "mimetype": "image/jpeg",
+        "caption": ""
+      }
+    },
+    "messageType": "imageMessage",
+    "messageTimestamp": 1751640100
+  }
+}
