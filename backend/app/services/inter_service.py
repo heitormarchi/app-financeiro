@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.models.models import (ScheduledOrigin, ScheduledTransaction, Source, SourceType,
                                Transaction, TxChannel, TxStatus)
 from app.services.import_service import ImportReport, enrich_and_fill
+from app.services.projection_service import reconcile_scheduled
 
 BASE = "https://cdpj.partners.bancointer.com.br"
 
@@ -114,4 +115,5 @@ async def sync_inter(session) -> ImportReport:
                                              origin=ScheduledOrigin.inter_agendado))
             report.futuros += 1
     await session.commit()
+    await reconcile_scheduled(session)
     return report

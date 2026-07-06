@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_session
 from app.models.models import ScheduledStatus, ScheduledTransaction
+from app.services.projection_service import compute_projection
 
 router = APIRouter(prefix="/scheduled")
 
@@ -19,3 +20,8 @@ async def list_scheduled(status: str = "previsto", session: AsyncSession = Depen
          "amount": float(s.amount), "origin": s.origin, "status": s.status}
         for s in rows
     ]
+
+
+@router.get("/projection")
+async def get_projection(days: int = 30, session: AsyncSession = Depends(get_session)):
+    return await compute_projection(session, days=days)

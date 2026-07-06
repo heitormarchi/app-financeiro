@@ -15,6 +15,7 @@ from app.services.enrichment_service import match_dictionary
 from app.services.parsers.fatura_parser import (FaturaEntry, PdfPasswordError,
                                                 extract_pdf_text, parse_fatura_text)
 from app.services.parsers.ofx_parser import parse_ofx
+from app.services.projection_service import reconcile_scheduled
 
 
 @dataclass
@@ -84,6 +85,7 @@ async def import_ofx(session: AsyncSession, source: Source, content: bytes,
                                          origin=ScheduledOrigin.ofx_futuro))
         report.futuros += 1
     await session.commit()
+    await reconcile_scheduled(session)
     return report
 
 
@@ -136,6 +138,7 @@ async def import_fatura(session: AsyncSession, source: Source, content, transpor
         report.futuros += 1
     await _flag_sms_sem_fatura(session, source, parsed)
     await session.commit()
+    await reconcile_scheduled(session)
     return report
 
 
