@@ -48,34 +48,52 @@ export default function Adicionar() {
 
   return (
     <div className="page">
-      <h2>Importar extrato ou fatura</h2>
-      <div className="form-import">
-        <select value={sourceId} onChange={(e) => setSourceId(e.target.value)}>
-          {sources.map((s) => (
-            <option key={s.id} value={s.id}>{s.bank_name ?? s.type} ({s.entity})</option>
-          ))}
-        </select>
-        <input type="file" accept=".ofx,.pdf" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-        <button disabled={!file || !sourceId || enviando} onClick={enviar}>
-          {enviando ? "Enviando..." : "Importar"}
-        </button>
-      </div>
+      <header className="page-head">
+        <h1 className="page-title">Adicionar</h1>
+      </header>
 
-      {erro && <p className="erro">{erro}</p>}
-      {resultado && (
-        <p className="resultado-import">
-          {resultado.novas} novas, {resultado.duplicadas} duplicadas,{" "}
-          {resultado.rejeitadas} rejeitadas, {resultado.futuros} futuros
-        </p>
-      )}
+      <section className="card">
+        <span className="card-label">Importar extrato ou fatura</span>
+        <div className="form-import">
+          <select value={sourceId} onChange={(e) => setSourceId(e.target.value)}>
+            {sources.map((s) => (
+              <option key={s.id} value={s.id}>{s.bank_name ?? s.type} ({s.entity})</option>
+            ))}
+          </select>
+          <label className={file ? "file-drop tem-arquivo" : "file-drop"}>
+            <input type="file" accept=".ofx,.pdf"
+                   onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            {file ? file.name : "Toque para escolher um arquivo .ofx ou .pdf"}
+          </label>
+          <button className="btn-primary" disabled={!file || !sourceId || enviando} onClick={enviar}>
+            {enviando ? "Enviando..." : "Importar"}
+          </button>
+        </div>
 
-      <hr />
+        {erro && <p className="erro">{erro}</p>}
+        {resultado && (
+          <p className="resultado-import">
+            {resultado.novas} novas, {resultado.duplicadas} duplicadas,{" "}
+            {resultado.rejeitadas} rejeitadas, {resultado.futuros} futuros
+          </p>
+        )}
+      </section>
 
-      <h2>Escanear cupom fiscal</h2>
-      {!mostrarScanner && (
-        <button onClick={() => setMostrarScanner(true)}>Escanear cupom</button>
-      )}
-      {mostrarScanner && <QrScanner onFechar={() => setMostrarScanner(false)} />}
+      <section className="card">
+        <span className="card-label">Escanear cupom fiscal</span>
+        {!mostrarScanner && (
+          <>
+            <p className="hint" style={{ marginBottom: 12 }}>
+              Aponte a câmera para o QR code do cupom — os itens da compra entram
+              categorizados automaticamente.
+            </p>
+            <button className="btn-primary" onClick={() => setMostrarScanner(true)}>
+              Abrir câmera
+            </button>
+          </>
+        )}
+        {mostrarScanner && <QrScanner onFechar={() => setMostrarScanner(false)} />}
+      </section>
     </div>
   );
 }

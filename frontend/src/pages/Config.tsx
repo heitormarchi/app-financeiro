@@ -115,23 +115,27 @@ export default function Config() {
 
   return (
     <div className="page">
-      <h2>Config</h2>
+      <header className="page-head">
+        <h1 className="page-title">Configurações</h1>
+      </header>
 
-      <section>
+      <section className="card">
         <h3>API Key</h3>
         <div className="editor-categoria">
           <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
-          <button onClick={salvarApiKey}>Salvar e testar</button>
+          <button className="btn-primary" onClick={salvarApiKey}>Salvar e testar</button>
         </div>
         {statusConexao === "ok" && <p className="ok">Conectado ✓</p>}
         {statusConexao === "erro" && <p className="erro">Falha na conexão — verifique a chave.</p>}
       </section>
 
-      <section>
+      <section className="card">
         <h3>Senhas de fatura (PDF)</h3>
         {sources.map((s) => (
           <div key={s.id} className="editor-categoria">
-            <span>{s.bank_name ?? s.type} {s.has_pdf_password ? "(senha configurada)" : "(sem senha)"}</span>
+            <span className="hint">
+              {s.bank_name ?? s.type} {s.has_pdf_password ? "(senha configurada)" : "(sem senha)"}
+            </span>
             <input type="password" placeholder="senha do PDF"
                    value={senhas[s.id] ?? ""}
                    onChange={(e) => setSenhas((v) => ({ ...v, [s.id]: e.target.value }))} />
@@ -140,25 +144,27 @@ export default function Config() {
         ))}
       </section>
 
-      <section>
+      <section className="card">
         <h3>Notificações</h3>
-        <button onClick={ativarNotificacoes}>Ativar notificações neste aparelho</button>
-        {statusPush && <p>{statusPush}</p>}
-        <p className="hint">
+        <button className="btn-primary" onClick={ativarNotificacoes}>
+          Ativar notificações neste aparelho
+        </button>
+        {statusPush && <p className="hint" style={{ marginTop: 8 }}>{statusPush}</p>}
+        <p className="hint" style={{ marginTop: 8 }}>
           No iPhone, adicione à Tela de Início primeiro (Compartilhar {'>'} Adicionar à Tela de Início).
         </p>
       </section>
 
       {sources.some((s) => s.type === "inter_pj") && (
-        <section>
+        <section className="card">
           <h3>Inter Empresas</h3>
           {sources.filter((s) => s.type === "inter_pj").map((s) => (
-            <div key={s.id} className="tx-row">
-              <span>
+            <div key={s.id} className="spread" style={{ padding: "6px 0" }}>
+              <span className="hint">
                 Saldo: {s.balance !== null ? formatBRL(s.balance) : "desconhecido"}
                 {s.balance_date && ` (em ${new Date(s.balance_date).toLocaleString("pt-BR")})`}
               </span>
-              <span className={s.cert_days_left !== null && s.cert_days_left < 30 ? "erro" : ""}>
+              <span className={s.cert_days_left !== null && s.cert_days_left < 30 ? "erro" : "hint"}>
                 {s.cert_days_left !== null ? `certificado expira em ${s.cert_days_left}d` : "certificado não configurado"}
               </span>
             </div>
@@ -166,11 +172,11 @@ export default function Config() {
           <button onClick={sincronizarInter} disabled={sincronizando}>
             {sincronizando ? "Sincronizando..." : "Sincronizar agora"}
           </button>
-          {statusInter && <p>{statusInter}</p>}
+          {statusInter && <p className="hint" style={{ marginTop: 8 }}>{statusInter}</p>}
         </section>
       )}
 
-      <section>
+      <section className="card">
         <h3>WhatsApp</h3>
         <p className="hint">
           Configure o webhook da Evolution API apontando para
@@ -181,16 +187,16 @@ export default function Config() {
         </p>
       </section>
 
-      <section>
+      <section className="card">
         <h3>Saúde das fontes</h3>
         <ul className="tx-list">
           {sources.map((s) => {
             const dias = diasDesde(s.last_ingested_at);
             return (
               <li key={s.id} className="tx-item">
-                <div className="tx-row">
-                  <span>{s.bank_name ?? s.type}</span>
-                  <span className={dias !== null && dias > 30 ? "erro" : ""}>
+                <div className="tx-row" style={{ cursor: "default" }}>
+                  <span className="tx-desc">{s.bank_name ?? s.type}</span>
+                  <span className={dias !== null && dias > 30 ? "valor-negativo" : "hint"}>
                     {dias === null ? "nunca sincronizado" : `há ${dias} dia(s)`}
                   </span>
                 </div>

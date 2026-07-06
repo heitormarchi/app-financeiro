@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, Legend, ReferenceLine, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, Tooltip, Legend, ReferenceLine, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import { api } from "../api";
+import { useDark, chartTheme, tooltipProps, brlCompacto } from "../theme";
 
 type Scheduled = { id: string; due_date: string; description: string; amount: number; origin: string; status: string };
 type Source = { id: string; bank_name: string | null; type: string };
@@ -16,8 +17,6 @@ const ORIGEM_LABEL: Record<string, string> = {
   inter_agendado: "Inter",
   fatura_a_vencer: "Fatura",
 };
-
-const CORES = ["#2563eb", "#f59e0b", "#10b981", "#8b5cf6"];
 
 const formatBRL = (v: number) =>
   Math.abs(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -33,6 +32,8 @@ export default function Futuros() {
   const [sucessoConfirm, setSucessoConfirm] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const dark = useDark();
+  const tema = chartTheme(dark);
 
   function carregar() {
     setLoading(true);
@@ -94,41 +95,60 @@ export default function Futuros() {
 
   return (
     <div className="page">
-      <h2>Futuros</h2>
+      <header className="page-head">
+        <h1 className="page-title">Futuros</h1>
+        <p className="page-sub">projeção de saldo — 30 dias</p>
+      </header>
 
-      {loading && <p>Carregando...</p>}
+      {loading && (
+        <>
+          <div className="skeleton" style={{ height: 230 }} />
+          <div className="skeleton" style={{ height: 120 }} />
+        </>
+      )}
       {erro && <p className="erro">{erro}</p>}
 
       {!loading && !erro && Object.keys(projection).length > 0 && (
-        <div style={{ width: "100%", height: 220 }}>
-          <ResponsiveContainer>
-            <LineChart data={chartData}>
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip formatter={(v) => formatBRL(Number(v ?? 0))} />
-              <Legend formatter={(id) => nomeFonte(id)} />
-              <ReferenceLine y={0} stroke="#ef4444" strokeDasharray="4 4" />
-              {Object.keys(projection).map((sourceId, i) => (
-                <Line key={sourceId} type="monotone" dataKey={sourceId}
-                     stroke={CORES[i % CORES.length]} dot={false} name={sourceId} />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <section className="card">
+          <span className="card-label">Saldo projetado</span>
+          <div style={{ width: "100%", height: 210 }}>
+            <ResponsiveContainer>
+              <LineChart data={chartData} margin={{ top: 4, right: 6, left: -10, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke={tema.grid} />
+                <XAxis dataKey="date" tickLine={false} axisLine={{ stroke: tema.grid }}
+                       tick={{ fontSize: 11, fill: tema.axis }} minTickGap={24} />
+                <YAxis tickFormatter={brlCompacto} tickLine={false} axisLine={false}
+                       tick={{ fontSize: 11, fill: tema.axis }} width={46} />
+                <Tooltip formatter={(v) => formatBRL(Number(v ?? 0))} {...tooltipProps(dark)} />
+                <Legend formatter={(id) => nomeFonte(String(id))}
+                        wrapperStyle={{ fontSize: 12 }} iconType="plainline" />
+                <ReferenceLine y={0} stroke={tema.negative} strokeDasharray="4 4" />
+                {Object.keys(projection).map((sourceId, i) => (
+                  <Line key={sourceId} type="monotone" dataKey={sourceId}
+                        stroke={tema.series[i % tema.series.length]} strokeWidth={2}
+                        dot={false} activeDot={{ r: 4 }} name={sourceId} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
       )}
 
       {sugestoes.length > 0 && (
         <section>
-          <h3>Sugestões de transferência</h3>
           {sucessoConfirm && <p className="ok">{sucessoConfirm}</p>}
           {sugestoes.map((s) => (
-            <div key={s.id} className="card-resumo">
-              <p>{s.reason}</p>
+            <div key={s.id} className="card insight">
+              <span className="card-label">Sugestão de transferência</span>
+              <p className="insight-texto">{s.reason}</p>
               <div className="editor-categoria">
                 <input type="number" step="0.01" value={valores[s.id] ?? ""}
                       onChange={(e) => setValores((v) => ({ ...v, [s.id]: e.target.value }))} />
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => { setConfirmando(s); setErroConfirm(null); }}>Confirmar Pix</button>
+                <div className="linha-acoes">
+                  <button className="btn-primary"
+                          onClick={() => { setConfirmando(s); setErroConfirm(null); }}>
+                    Confirmar Pix
+                  </button>
                   <button onClick={() => dispensar(s)}>Dispensar</button>
                 </div>
               </div>
@@ -141,36 +161,45 @@ export default function Futuros() {
         <div className="modal-overlay" onClick={() => setConfirmando(null)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <h3>Confirmar transferência Pix</h3>
-            <p>Valor: {formatBRL(Number(valores[confirmando.id] ?? confirmando.amount))}</p>
-            <p>Destino: sua conta pessoal (chave Pix configurada em Config)</p>
+            <p>
+              Valor: <strong>{formatBRL(Number(valores[confirmando.id] ?? confirmando.amount))}</strong>
+            </p>
+            <p className="hint">Destino: sua conta pessoal (chave Pix configurada em Config)</p>
             {erroConfirm && <p className="erro">{erroConfirm}</p>}
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => confirmarPix(confirmando)}>Confirmar e enviar</button>
+            <div className="modal-acoes">
+              <button className="btn-primary" onClick={() => confirmarPix(confirmando)}>
+                Confirmar e enviar
+              </button>
               <button onClick={() => setConfirmando(null)}>Cancelar</button>
             </div>
           </div>
         </div>
       )}
 
-      <h3>Lançamentos futuros</h3>
-      {!loading && !erro && itens.length === 0 && <p>Nenhum lançamento futuro previsto.</p>}
-
-      <ul className="tx-list">
-        {itens.map((i) => (
-          <li key={i.id} className="tx-item">
-            <div className="tx-row">
-              <div className="tx-info">
-                <span className="tx-data">{i.due_date}</span>
-                <span className="tx-desc">{i.description}</span>
-                <span className="tx-badges"><span className="badge">{ORIGEM_LABEL[i.origin] ?? i.origin}</span></span>
-              </div>
-              <span className={i.amount < 0 ? "valor-negativo" : "valor-positivo"}>
-                {i.amount < 0 ? "-" : "+"}{formatBRL(i.amount)}
-              </span>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {!loading && !erro && (
+        <section className="card">
+          <span className="card-label">Lançamentos futuros</span>
+          {itens.length === 0 && <p className="hint">Nenhum lançamento futuro previsto.</p>}
+          <ul className="tx-list">
+            {itens.map((i) => (
+              <li key={i.id} className="tx-item">
+                <div className="tx-row" style={{ cursor: "default" }}>
+                  <div className="tx-info">
+                    <span className="tx-data">{i.due_date}</span>
+                    <span className="tx-desc">{i.description}</span>
+                    <span className="tx-badges">
+                      <span className="badge">{ORIGEM_LABEL[i.origin] ?? i.origin}</span>
+                    </span>
+                  </div>
+                  <span className={i.amount < 0 ? "valor-negativo" : "valor-positivo"}>
+                    {i.amount < 0 ? "−" : "+"}{formatBRL(i.amount)}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

@@ -117,7 +117,7 @@ export default function QrScanner({ onFechar }: { onFechar: () => void }) {
           <div className="qr-manual">
             <input placeholder="Colar URL do QR manualmente" value={urlManual}
                    onChange={(e) => setUrlManual(e.target.value)} />
-            <button onClick={() => urlManual && processar(urlManual)}>Enviar</button>
+            <button className="btn-primary" onClick={() => urlManual && processar(urlManual)}>Enviar</button>
           </div>
         </>
       )}

@@ -51,39 +51,50 @@ export default function Pendencias() {
 
   return (
     <div className="page">
-      <h2>Pendências</h2>
-      {loading && <p>Carregando...</p>}
+      <header className="page-head">
+        <h1 className="page-title">Pendências</h1>
+      </header>
+
+      {loading && (
+        <>
+          <div className="skeleton" style={{ height: 90 }} />
+          <div className="skeleton" style={{ height: 90 }} />
+        </>
+      )}
       {erro && <p className="erro">{erro}</p>}
-      {!loading && !erro && itens.length === 0 && <p>Nenhuma pendência 🎉</p>}
+      {!loading && !erro && itens.length === 0 && (
+        <div className="card empty">
+          <span className="empty-titulo">Tudo em dia</span>
+          Nenhuma pendência para revisar. 🎉
+        </div>
+      )}
 
-      <ul className="tx-list">
-        {itens.map((p) => (
-          <li key={p.id} className="tx-item">
-            <div className="tx-detalhe">
-              <strong>{TIPO_LABEL[p.type] ?? p.type}</strong>
-              <p className="pendencia-payload">
-                {String(p.payload.descricao ?? p.payload.erro ?? p.payload.merchant ?? "")}
-              </p>
+      {itens.map((p) => (
+        <div key={p.id} className="card">
+          <span className="card-label">{TIPO_LABEL[p.type] ?? p.type}</span>
+          <p className="pendencia-payload">
+            {String(p.payload.descricao ?? p.payload.erro ?? p.payload.merchant ?? "")}
+          </p>
 
-              {p.type === "parse_failed" && p.payload.canal === "sms" && (
-                <button onClick={() => reprocessar(p.id)}>Reprocessar</button>
-              )}
+          <div className="editor-categoria">
+            {p.type === "parse_failed" && p.payload.canal === "sms" && (
+              <button onClick={() => reprocessar(p.id)}>Reprocessar</button>
+            )}
 
-              {p.type === "descrever_lancamento" && (
-                <DescreverForm onSalvar={(descricao) => resolver(p.id, { descricao })} />
-              )}
+            {p.type === "descrever_lancamento" && (
+              <DescreverForm onSalvar={(descricao) => resolver(p.id, { descricao })} />
+            )}
 
-              {p.type === "item_generico" && (
-                <DescreverForm placeholder="categoria" onSalvar={(category) => resolver(p.id, { category })} />
-              )}
+            {p.type === "item_generico" && (
+              <DescreverForm placeholder="categoria" onSalvar={(category) => resolver(p.id, { category })} />
+            )}
 
-              {p.type === "sms_sem_fatura" && (
-                <button onClick={() => resolver(p.id, {})}>Marcar como resolvido</button>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
+            {p.type === "sms_sem_fatura" && (
+              <button onClick={() => resolver(p.id, {})}>Marcar como resolvido</button>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -96,7 +107,7 @@ function DescreverForm({ placeholder = "descrição", onSalvar }: {
   return (
     <div className="editor-categoria">
       <input placeholder={placeholder} value={valor} onChange={(e) => setValor(e.target.value)} />
-      <button disabled={!valor} onClick={() => onSalvar(valor)}>Salvar</button>
+      <button className="btn-primary" disabled={!valor} onClick={() => onSalvar(valor)}>Salvar</button>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api";
 
 type ReceiptItem = { id: string; description: string; total_price: number; category: string | null };
@@ -83,6 +84,10 @@ export default function Transacoes() {
 
   return (
     <div className="page">
+      <header className="page-head">
+        <h1 className="page-title">Extrato</h1>
+      </header>
+
       <div className="filtros">
         <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -99,58 +104,75 @@ export default function Transacoes() {
         </select>
       </div>
 
-      {loading && <p>Carregando...</p>}
+      {loading && (
+        <>
+          <div className="skeleton" style={{ height: 72 }} />
+          <div className="skeleton" style={{ height: 72 }} />
+          <div className="skeleton" style={{ height: 72 }} />
+        </>
+      )}
       {erro && <p className="erro">{erro}</p>}
       {!loading && !erro && txs.length === 0 && (
-        <p>Sem dados neste mês — importe um extrato em ➕</p>
+        <div className="card empty">
+          <span className="empty-titulo">Nenhuma transação</span>
+          Sem dados neste mês — <Link to="/adicionar">importe um extrato</Link>.
+        </div>
       )}
 
-      <ul className="tx-list">
-        {txs.map((t) => (
-          <li key={t.id} className="tx-item">
-            <div className="tx-row" onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}>
-              <div className="tx-info">
-                <span className="tx-data">{t.date}</span>
-                <span className="tx-desc">{t.merchant || t.raw_description}</span>
-                <span className="tx-badges">
-                  {t.source_channel && <span className="badge">{t.source_channel.toUpperCase()}</span>}
-                  {t.status === "provisoria" && <span className="badge badge-provisoria">provisória</span>}
-                </span>
-              </div>
-              <span className={t.amount < 0 ? "valor-negativo" : "valor-positivo"}>
-                {t.amount < 0 ? "-" : "+"}{formatBRL(t.amount)}
-              </span>
-            </div>
+      {!loading && txs.length > 0 && (
+        <div className="card">
+          <ul className="tx-list">
+            {txs.map((t) => (
+              <li key={t.id} className="tx-item">
+                <div className="tx-row" onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}>
+                  <div className="tx-info">
+                    <span className="tx-data">{t.date}</span>
+                    <span className="tx-desc">{t.merchant || t.raw_description}</span>
+                    <span className="tx-badges">
+                      {t.category && <span className="badge">{t.category}</span>}
+                      {t.source_channel && <span className="badge">{t.source_channel.toUpperCase()}</span>}
+                      {t.status === "provisoria" && <span className="badge badge-provisoria">provisória</span>}
+                    </span>
+                  </div>
+                  <span className={t.amount < 0 ? "valor-negativo" : "valor-positivo"}>
+                    {t.amount < 0 ? "−" : "+"}{formatBRL(t.amount)}
+                  </span>
+                </div>
 
-            {expandedId === t.id && (
-              <div className="tx-detalhe">
-                <p>Categoria: {t.category ?? "sem categoria"} {t.subcategory ? `/ ${t.subcategory}` : ""}</p>
-                <button onClick={() => setEditingId(editingId === t.id ? null : t.id)}>
-                  Editar categoria
-                </button>
+                {expandedId === t.id && (
+                  <div className="tx-detalhe">
+                    <p>
+                      Categoria: <strong>{t.category ?? "sem categoria"}</strong>
+                      {t.subcategory ? ` / ${t.subcategory}` : ""}
+                    </p>
+                    <button onClick={() => setEditingId(editingId === t.id ? null : t.id)}>
+                      Editar categoria
+                    </button>
 
-                {editingId === t.id && (
-                  <EditorCategoria
-                    categorias={categoriasExistentes}
-                    categoriaAtual={t.category ?? ""}
-                    subcategoriaAtual={t.subcategory ?? ""}
-                    onSalvar={(cat, sub) => salvarCategoria(t.id, cat, sub)}
-                  />
-                )}
+                    {editingId === t.id && (
+                      <EditorCategoria
+                        categorias={categoriasExistentes}
+                        categoriaAtual={t.category ?? ""}
+                        subcategoriaAtual={t.subcategory ?? ""}
+                        onSalvar={(cat, sub) => salvarCategoria(t.id, cat, sub)}
+                      />
+                    )}
 
-                {t.receipt_items.length > 0 && (
-                  <div className="receipt-items">
-                    <h4>Itens do cupom</h4>
-                    {t.receipt_items.map((item) => (
-                      <ItemEditor key={item.id} item={item} onSalvar={salvarCategoriaItem} />
-                    ))}
+                    {t.receipt_items.length > 0 && (
+                      <div className="receipt-items">
+                        <h4>Itens do cupom</h4>
+                        {t.receipt_items.map((item) => (
+                          <ItemEditor key={item.id} item={item} onSalvar={salvarCategoriaItem} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -175,7 +197,7 @@ function EditorCategoria({ categorias, categoriaAtual, subcategoriaAtual, onSalv
       </select>
       <input placeholder="ou nova categoria" value={livre} onChange={(e) => setLivre(e.target.value)} />
       <input placeholder="subcategoria (opcional)" value={sub} onChange={(e) => setSub(e.target.value)} />
-      <button onClick={() => onSalvar(livre || cat, sub)}>Salvar</button>
+      <button className="btn-primary" onClick={() => onSalvar(livre || cat, sub)}>Salvar</button>
     </div>
   );
 }
@@ -189,13 +211,16 @@ function ItemEditor({ item, onSalvar }: {
 
   return (
     <div className="item-editor">
-      <span>{item.description} — {formatBRL(item.total_price)}</span>
+      <span className="spread">
+        <span>{item.description}</span>
+        <strong>{formatBRL(item.total_price)}</strong>
+      </span>
       <input value={cat} onChange={(e) => setCat(e.target.value)} placeholder="categoria" />
       <label>
         <input type="checkbox" checked={salvarRegra} onChange={(e) => setSalvarRegra(e.target.checked)} />
         salvar como regra
       </label>
-      <button onClick={() => onSalvar(item.id, cat, salvarRegra)}>Salvar</button>
+      <button className="btn-primary" onClick={() => onSalvar(item.id, cat, salvarRegra)}>Salvar</button>
     </div>
   );
 }
