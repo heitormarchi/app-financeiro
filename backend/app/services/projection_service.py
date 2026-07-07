@@ -4,8 +4,8 @@ from decimal import ROUND_CEILING, Decimal
 from sqlalchemy import select
 
 from app.core.auth import get_single_user
-from app.models.models import (Entity, RecurringRule, ScheduledStatus, ScheduledTransaction, Source,
-                               Transaction, TransferSuggestion)
+from app.models.models import (Entity, RecurringRule, ScheduledOrigin, ScheduledStatus,
+                               ScheduledTransaction, Source, Transaction, TransferSuggestion)
 from app.services.date_utils import add_months
 from app.services.push_service import send_push
 
@@ -141,11 +141,17 @@ async def project_future_installments(session, entity: str | None = None) -> lis
 
 async def compute_monthly_cashflow(session, months: int = 6, entity: str | None = None) -> list[dict]:
     """Agrega, mês a mês, os lançamentos futuros conhecidos: scheduled_transactions
-    (automáticos + manuais/recorrentes) e as parcelas de cartão ainda restantes."""
+    (automáticos + manuais/recorrentes) e as parcelas de cartão ainda restantes.
+
+    O origin `fatura_a_vencer` é ignorado aqui: ele é um valor agregado único que a
+    própria fatura informa (todas as parcelas futuras somadas em um único due_date),
+    e `project_future_installments` já cobre essa mesma dívida mês a mês com mais
+    precisão — somar os dois contaria a mesma parcela duas vezes."""
     ent = Entity(entity) if entity and entity != "todas" else None
 
     scheduled = (await session.execute(select(ScheduledTransaction).where(
-        ScheduledTransaction.status == ScheduledStatus.previsto))).scalars().all()
+        ScheduledTransaction.status == ScheduledStatus.previsto,
+        ScheduledTransaction.origin != ScheduledOrigin.fatura_a_vencer))).scalars().all()
     sources = {s.id: s for s in (await session.execute(select(Source))).scalars().all()}
     rules = {r.id: r for r in (await session.execute(select(RecurringRule))).scalars().all()}
 

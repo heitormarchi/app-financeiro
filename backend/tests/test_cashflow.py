@@ -45,14 +45,14 @@ async def test_parcela_quitada_nao_aparece(session):
     assert await project_future_installments(session) == []
 
 
-async def test_cashflow_agrega_scheduled_e_parcelas(session):
+async def test_cashflow_agrega_scheduled_nao_fatura_e_parcelas(session):
     user = await get_single_user(session)
     src = Source(user_id=user.id, type=SourceType.caixa_cartao, entity=Entity.pessoal, bank_name="Caixa")
     session.add(src); await session.flush()
     proximo_mes = add_months(date.today(), 1)
     session.add(ScheduledTransaction(
         user_id=user.id, source_id=src.id, due_date=proximo_mes,
-        description="Fatura", amount=Decimal("-500.00"), origin=ScheduledOrigin.fatura_a_vencer))
+        description="Aluguel", amount=Decimal("-500.00"), origin=ScheduledOrigin.ofx_futuro))
     session.add(Transaction(
         user_id=user.id, source_id=src.id, external_id="fat-3", amount=Decimal("-100.00"),
         date=datetime.now(timezone.utc), raw_description="LOJA CINCO EXEMPLO",
@@ -63,4 +63,30 @@ async def test_cashflow_agrega_scheduled_e_parcelas(session):
 
     fluxo = await compute_monthly_cashflow(session, months=3)
     bucket = next(f for f in fluxo if f["month"] == proximo_mes.strftime("%Y-%m"))
-    assert bucket["total"] == -600.00  # -500 da fatura -100 da parcela 2/6
+    assert bucket["total"] == -600.00  # -500 do aluguel (ofx_futuro) - 100 da parcela 2/6
+
+
+async def test_cashflow_ignora_fatura_a_vencer_para_nao_duplicar_parcelas(session):
+    """A fatura_a_vencer é um agregado único que a própria fatura já informa (todas as
+    parcelas futuras somadas) — se o cashflow também somasse project_future_installments
+    por cima, a mesma dívida contaria duas vezes. Ver relato do Heitor: "fatura e o
+    detalhamento" duplicando o fluxo de caixa negativo."""
+    user = await get_single_user(session)
+    src = Source(user_id=user.id, type=SourceType.caixa_cartao, entity=Entity.pessoal, bank_name="Caixa")
+    session.add(src); await session.flush()
+    proximo_mes = add_months(date.today(), 1)
+    session.add(ScheduledTransaction(
+        user_id=user.id, source_id=src.id, due_date=proximo_mes,
+        description="Fatura Caixa (despesas a vencer)", amount=Decimal("-5216.65"),
+        origin=ScheduledOrigin.fatura_a_vencer))
+    session.add(Transaction(
+        user_id=user.id, source_id=src.id, external_id="fat-4", amount=Decimal("-100.00"),
+        date=datetime.now(timezone.utc), raw_description="LOJA CINCO EXEMPLO",
+        source_channel=TxChannel.pdf, entity=Entity.pessoal, status=TxStatus.confirmada,
+        installment_no=1, installment_total=6, original_purchase_date=date.today(),
+    ))
+    await session.commit()
+
+    fluxo = await compute_monthly_cashflow(session, months=3)
+    bucket = next(f for f in fluxo if f["month"] == proximo_mes.strftime("%Y-%m"))
+    assert bucket["total"] == -100.00  # só a parcela 2/6 — a fatura_a_vencer é ignorada
