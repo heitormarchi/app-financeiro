@@ -19,23 +19,29 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.create_table(
-        'recurring_rules',
-        sa.Column('id', sa.Uuid(), primary_key=True),
-        sa.Column('user_id', sa.Uuid(), sa.ForeignKey('users.id'), nullable=False),
-        sa.Column('description', sa.String(length=500), nullable=False),
-        sa.Column('amount', sa.Numeric(precision=12, scale=2), nullable=False),
-        sa.Column('entity', sa.String(length=10), nullable=False, server_default='pessoal'),
-        sa.Column('source_id', sa.Uuid(), sa.ForeignKey('sources.id'), nullable=True),
-        sa.Column('frequency', sa.String(length=10), nullable=False),
-        sa.Column('day', sa.Integer(), nullable=False),
-        sa.Column('month', sa.Integer(), nullable=True),
-        sa.Column('start_date', sa.Date(), nullable=False),
-        sa.Column('active', sa.Boolean(), nullable=False, server_default=sa.true()),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
-    )
-    op.add_column('scheduled_transactions',
-                   sa.Column('recurring_rule_id', sa.Uuid(), sa.ForeignKey('recurring_rules.id'), nullable=True))
+    inspector = sa.inspect(op.get_bind())
+
+    if 'recurring_rules' not in inspector.get_table_names():
+        op.create_table(
+            'recurring_rules',
+            sa.Column('id', sa.Uuid(), primary_key=True),
+            sa.Column('user_id', sa.Uuid(), sa.ForeignKey('users.id'), nullable=False),
+            sa.Column('description', sa.String(length=500), nullable=False),
+            sa.Column('amount', sa.Numeric(precision=12, scale=2), nullable=False),
+            sa.Column('entity', sa.String(length=10), nullable=False, server_default='pessoal'),
+            sa.Column('source_id', sa.Uuid(), sa.ForeignKey('sources.id'), nullable=True),
+            sa.Column('frequency', sa.String(length=10), nullable=False),
+            sa.Column('day', sa.Integer(), nullable=False),
+            sa.Column('month', sa.Integer(), nullable=True),
+            sa.Column('start_date', sa.Date(), nullable=False),
+            sa.Column('active', sa.Boolean(), nullable=False, server_default=sa.true()),
+            sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
+        )
+
+    existing_columns = {c['name'] for c in inspector.get_columns('scheduled_transactions')}
+    if 'recurring_rule_id' not in existing_columns:
+        op.add_column('scheduled_transactions',
+                       sa.Column('recurring_rule_id', sa.Uuid(), sa.ForeignKey('recurring_rules.id'), nullable=True))
 
 
 def downgrade() -> None:
