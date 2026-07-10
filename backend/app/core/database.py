@@ -23,11 +23,3 @@ class Base(DeclarativeBase):
 async def get_session():
     async with AsyncSessionLocal() as session:
         yield session
-
-
-async def init_db():
-    # models must be imported so SQLAlchemy registers them in Base.metadata
-    import app.models.models  # noqa: F401
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)

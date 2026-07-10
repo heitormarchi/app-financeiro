@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.router import router as api_router
 from app.core.config import settings
-from app.core.database import AsyncSessionLocal, init_db
+from app.core.database import AsyncSessionLocal
 from app.services.weekly_service import run_weekly_job
 
 
@@ -42,7 +42,6 @@ async def _run_projection_job_scheduled():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
     scheduler = AsyncIOScheduler(timezone="America/Sao_Paulo")
     scheduler.add_job(_run_weekly_job_scheduled, CronTrigger(day_of_week="sun", hour=18, minute=0))
     scheduler.add_job(_run_inter_sync_scheduled, CronTrigger(hour=7, minute=0))

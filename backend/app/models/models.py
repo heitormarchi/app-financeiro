@@ -246,17 +246,6 @@ class WeeklySummary(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
-class UserRoutine(Base):
-    __tablename__ = "user_routines"
-    id: Mapped[uuid.UUID] = _uuid_pk()
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), unique=True, nullable=False)
-    work_start: Mapped[str | None] = mapped_column(String(5))
-    work_end: Mapped[str | None] = mapped_column(String(5))
-    work_days: Mapped[list | None] = mapped_column(sa.JSON)
-    patterns: Mapped[dict | None] = mapped_column(sa.JSON)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-
-
 class CollectivePattern(Base):
     __tablename__ = "collective_patterns"
     id: Mapped[uuid.UUID] = _uuid_pk()
